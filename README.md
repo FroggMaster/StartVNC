@@ -8,7 +8,7 @@ Package: tigervnc-scraping-server
 **To Install on Manjaro:**
 > pacman -S tigervnc-scraping-server
 
-**To Install on Ubuntu / Pop_OS!**
+**To Install on Debian / Ubuntu / Pop_OS!**
 > sudo apt-get install tigervnc-scraping-server
 
 ## How it works
