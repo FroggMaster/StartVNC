@@ -5,11 +5,11 @@ Shell script to run TigerVNC server on the actual desktop (scraping).
 TigerVNC server installed 
 Package: tigervnc-scraping-server
 
-## To Install on Manjaro: 
-pacman -S tigervnc-scraping-server
+**To Install on Manjaro:**
+> pacman -S tigervnc-scraping-server
 
-## To Install on Ubuntu / Pop_OS!
-sudo apt-get install tigervnc-scraping-server
+**To Install on Ubuntu / Pop_OS!**
+> sudo apt-get install tigervnc-scraping-server
 
 ## How it works
 The script checks, if you have already a .vnc Directory in your home ($HOME). You have to set a vnc password with the "vncpasswd" command, this will result a ~/.vnc/passwd file.  
@@ -61,6 +61,9 @@ For further information, please take a look at the TigerVNC server documentation
 - [vncconfig documentation](https://tigervnc.org/doc/vncconfig.html).
 
 ## TODO
-In the future, I try to implement a separate logfile for the script, since the logfile stored in ~/.vnc/logfile has only the TigerVNC Server output.
+- [ ] Implement better Logs
+- [ ] Test on Manjaro & Ubuntu (I'm sure it works fine.)
+- [ ] Open a pull request
+- [ ] Implement usage instructions
 
-Further, I want to test it on other linux systems, whether it is working there, too, since this script was written on a debian machine (Debian stretch). Feel free to write me if you have any issues on other distributions or architectures.
+In the future, I try to implement a separate logfile for the script, since the logfile stored in ~/.vnc/logfile has only the TigerVNC Server output.
