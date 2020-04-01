@@ -207,7 +207,7 @@ while [[ -n $1 ]]; do
                 echo ${VAR} > ${PIDFILE}
             else
                 echo -e ${FAILED}
-                error_exit "Couldn't start VNC Server. Exiting" ;;
+                error_exit "Couldn't start VNC Server. Exiting" ;
             fi
         fi
     ;;
