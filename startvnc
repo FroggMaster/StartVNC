@@ -1,48 +1,62 @@
 #!/bin/bash
-# title             :startvnc
-# description       :This script was written for the debian package tigervnc-scraping-server, in order to log in to the actual X session on display :0
-# author            :Istvan Sebestyen-Teleki
-# date              :2018.10.06.
-# version           :0.3
-# usage             :bash startvnc
-# notes             :install tigervnc-scraping-server (debian stretch)
+# ---------------------------------------------------------------------------
+# startvnc - Start/Stop script designed for the package tigervnc-scraping-server, in order to log in to the X session on the active display.
 
-# What's the script name
-SCRIPTNAME="startvnc"
+# Copyright 2020, Domenico Costanzo
+# All rights reserved.
+#
+# Usage             :startvnc [-h|--help] [-s|--start] [-k|--kill] [-r|--restart] [-c|--status]
+# Dependencies      :tigervnc-scraping-server
+#
+# Changelog:
+# 2020-03-31 Created by Domenico Costanzo
+# ---------------------------------------------------------------------------
 
-# Where the x0vncserver executable is located, default:
+# Settings Variables / Configuration
+#
+# Set the scripts name to current file name.
+PROGNAME=${0##*/}
+# Current version. 
+VERSION="0.1"
+# Where the x0vncserver executable is located, by default:
 VNCSERVER="/usr/bin/x0vncserver"
-
 # Set home directory
 HOMEDIR=${HOME}
-
 # Default VNC User directory
 VNCDIR="${HOMEDIR}/.vnc"
-
-# Set log file for debugging
-LOGFILE="${VNCDIR}/logfile"
-
+# Logs and stuff
+LOGFILE="${VNCDIR}/${PROGNAME}.log"
 # The vnc passwd file. If it doesn't exist, you need to create it
 PASSWDFILE="${VNCDIR}/passwd"
-
-# Leave this on ":0", since we want to log in to the actual session
-DISPLAY=":0"
-
 # Set the port (default 5900)
 VNCPORT="5900"
-
+# Note to Self > Add Y/N prompt instead? 
+# Set this to true or false
+POPOS=false
+# Had to modify to 1 for Pop_OS!
+if $POPOS; 
+then
+    DISPLAY=":1"
+else
+    DISPLAY=":0"
+fi
 # PID of the actual VNC server running
 # The PID is actually created this way, so it is compatible with the vncserver command
 # if you want to kill the VNC server manually, just type 
 # vncserver -kill :0
 PIDFILE="${VNCDIR}/${HOSTNAME}${DISPLAY}.pid"
+# Lets make it a little easier on the eyes. (Color)
+RED="\033[1;31m"
+GREEN="\033[1;32m"
+NOCOLOR="\033[0m"
+# Output, now that we have some flashy stuff.
+OK="[${GREEN}ok${NOCOLOR}]"
+FAILED="[${RED}failed${NOCOLOR}]"
+UNKNOWNERROR="[${RED}Unknown Error${NOCOLOR}]"
+RUNNING="[${GREEN}running${NOCOLOR}]"
+NOTRUNNING="[${RED}not running${NOCOLOR}]"
 
-# Add some color to the script
-OK="[\033[1;32mok\033[0m]"
-FAILED="[\033[1;31mfailed\033[0m]"
-RUNNING="[\033[1;32mrunning\033[0m]"
-NOTRUNNING="[\033[1;31mnot running\033[0m]"
-
+# The bread and butter
 # Function to get the process id of the VNC Server
 fn_pid() {
     CHECKPID=$(ps -fu ${USER} | grep "[x]0vncserver" | awk '{print $2}')
@@ -55,11 +69,10 @@ fn_pid() {
     fi
 }
 
-
+# Check for ~/.vnc and error if it doesn't exist.
 if [ ! -d ${VNCDIR} ]
 then
     echo -e "Directory ${VNCDIR} doesn't exist. Create it first." ${FAILED}
-    echo
     exit 1
 fi
 
@@ -67,19 +80,77 @@ if [ ! -f ${PASSWDFILE} ]
 then
     echo -e "${PASSWDFILE} doesn't exist. Create VNC password first. ${FAILED}"
     echo "Type \"vncpasswd\" to create passwd file."
-    echo
     exit 1
 fi
 
-case "$1" in
-    start)
-        echo -n "Starting VNC Server on display ${DISPLAY} "
+clean_up() { # Perform pre-exit housekeeping
+  # rm ~/.vnc/*.pid    #Clean up residual PID files
+  return
+}
+
+error_exit() {
+  echo -e "${PROGNAME}: ${1:-"${UNKNOWNERROR}"}" >&2
+  clean_up
+  exit 1
+}
+
+graceful_exit() {
+  clean_up
+  exit
+}
+
+signal_exit() { # Handle trapped signals
+  case $1 in
+    INT)
+      error_exit "Program interrupted by user" ;;
+    TERM)
+      echo -e "\n$PROGNAME: Program terminated" >&2
+      graceful_exit ;;
+    *)
+      error_exit "$PROGNAME: Terminating on unknown signal" ;;
+  esac
+}
+
+usage() {
+  echo -e "Usage: $PROGNAME [-h|--help] [-s|--start] [-k|--kill] [-r|--restart] [-c|--status]"
+}
+
+help_message() {
+  cat <<- _EOF_
+  $PROGNAME Ver. $VERSION
+  This script was written for the package tigervnc-scraping-server, in order to log in to the actual X session on the active display.
+  
+  $(usage)
+
+  Options:
+  -h, --help     Display this help message and exit.
+  -s, --start    Start the TigerVNC Server on active display.
+  -k, --kill     Kill the TigerVNC Server on the active display.
+  -r, --restart  Restart the TigerVNC Server on the active display.
+  -c, --status   Output the current status of the TigerVNC Server on the active display.
+
+_EOF_
+  return
+}
+
+# Trap signals
+trap "signal_exit TERM" TERM HUP
+trap "signal_exit INT"  INT
+
+
+
+# Parse command-line
+while [[ -n $1 ]]; do
+  case $1 in
+    -h | --help)
+      help_message; graceful_exit ;;
+    -s | --start)
+      echo -n "Starting VNC Server on display ${DISPLAY} "
         fn_pid
         if [ $? -eq 0 ]
         then
             echo -e ${FAILED}
-            echo -e "VNC Server is running (pid: ${VAR})"
-	    echo
+            echo -e "VNC Server is running (pid: ${GREEN}${VAR}${NOCOLOR})"
         else
             ${VNCSERVER} -display ${DISPLAY} -passwordfile ${PASSWDFILE} -rfbport ${VNCPORT} >> ${LOGFILE} 2>&1 &
 	    if [ $? -eq 0 ]
@@ -87,19 +158,29 @@ case "$1" in
             	fn_pid
             	echo ${VAR} > ${PIDFILE}
             	echo -e ${OK}
-	    	echo
 	else
 		echo -e $FAILED
-		echo
 		fi
 
         fi
-
-        ;;
-    
-    restart)
-
-        echo -n "Restarting VNC Server on display ${DISPLAY} "
+    ;;
+    -k | --kill)
+      echo -n "Stopping VNC Server: "
+        fn_pid
+        if [ $? -eq 0 ]
+        then
+            kill -9 ${VAR}
+            echo -ne ${OK}
+            echo -e " (pid: ${GREEN}${VAR}${NOCOLOR})"
+            #Clean up PID file >> This should be implemented better cause it's in a trash place right now and doesn't do it's job.
+            rm ${PIDFILE}
+        else
+            echo -e ${FAILED}
+            exit 1
+        fi
+    ;;
+    -r | --restart)
+      echo -n "Restarting VNC Server on display ${DISPLAY} "
         fn_pid
         if [ $? -eq 0 ]
         then
@@ -109,71 +190,45 @@ case "$1" in
             then 
                 ${VNCSERVER} -display ${DISPLAY} -passwordfile ${PASSWDFILE} -rfbport ${VNCPORT} >> ${LOGFILE} 2>&1 &
                 echo -e ${OK}
-		echo
                 fn_pid 
                 echo ${VAR} > ${PIDFILE}
-                exit 0
+                graceful_exit
             else
                 echo -e ${FAILED}
-                echo "Couldn't stop VNC Server. Exiting."
-		echo
                 exit 1
             fi
 
         else
-
             ${VNCSERVER} -display ${DISPLAY} -passwordfile ${PASSWDFILE} -rfbport ${VNCPORT} >> ${LOGFILE} 2>&1 &
             if [ $? -eq 0 ]
             then
                 echo -e ${OK}
-		echo
                 fn_pid
                 echo ${VAR} > ${PIDFILE}
             else
                 echo -e ${FAILED}
-                echo "Couldn't start VNC Server. Exiting."
-		echo
-                exit 1
+                error_exit "Couldn't start VNC Server. Exiting" ;;
             fi
         fi
     ;;
-
-    stop)
-    
-        echo -n "Stopping VNC Server: "
-        fn_pid
-        if [ $? -eq 0 ]
-        then
-            kill -9 ${VAR}
-            echo -ne ${OK}
-            echo -e " (pid: ${VAR})"
-	    echo
-        else
-            echo -e ${FAILED}
-            echo -e "VNC Server is not running."
-	    echo
-            exit 1
-        fi
-    ;;
-
-    status)
+    -c | --status)
         echo -n "Status of the VNC server: "
         fn_pid
         if [ $? -eq 0 ]
         then
-            echo -e "$RUNNING (pid: $VAR)"
-	    echo
-            exit 0
+            echo -e "$RUNNING (pid: ${GREEN}${VAR}${NOCOLOR})"
+            graceful_exit
         else
             echo -e $NOTRUNNING
-	    echo
+            exit 1
         fi
-        ;;
-
-    *)
-        echo
-        echo "Usage: $0 start|stop|restart|status"
-        echo
-        exit 1
     ;;
-esac
+    -* | --*)
+      usage
+      error_exit "Unknown option $1" ;;
+    *)
+      echo "Argument $1 to process..." ;;
+  esac
+  shift
+done
+graceful_exit
