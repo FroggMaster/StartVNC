@@ -62,8 +62,8 @@ For further information, please take a look at the TigerVNC server documentation
 
 ## TODO
 - [ ] Implement better Logs
-- [ ] Test on Manjaro & Ubuntu (I'm sure it works fine.)
-- [ ] Open a pull request
-- [ ] Implement usage instructions
+- [X] Test on Manjaro & Ubuntu (I'm sure it works fine.)
+- [ ] Perform check for dependencies before doing anything
+- [ ] Implement netter usage instructions
 
 In the future, I try to implement a separate logfile for the script, since the logfile stored in ~/.vnc/logfile has only the TigerVNC Server output.
