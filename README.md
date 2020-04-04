@@ -22,14 +22,19 @@ The default port is for the :0 display 5900. If you want to change it, just edit
 
 
 ## Usage
-  `startvnc [-h|--help] [-s|--start] [-k|--kill] [-r|--restart] [-c|--status]
+  > startvnc [-h|--help] [-s|--start] [-k|--kill] [-r|--restart] [-c|--status]
+  >
+  > Options:
 
-  Options:
-  -h, --help     Display this help message and exit.
-  -s, --start    Start the TigerVNC Server on active display.
-  -k, --kill     Kill the TigerVNC Server on the active display.
-  -r, --restart  Restart the TigerVNC Server on the active display.
-  -c, --status   Output the current status of the TigerVNC Server on the active display.`
+  > -h, --help     Display this help message and exit.
+
+  > -s, --start    Start the TigerVNC Server on active display.
+
+  > -k, --kill     Kill the TigerVNC Server on the active display.
+
+  > -r, --restart  Restart the TigerVNC Server on the active display.
+
+  > -c, --status   Output the current status of the TigerVNC Server on the active display.`
 
 ## Files
 * *$HOME/.vnc*  
