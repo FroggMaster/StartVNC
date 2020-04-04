@@ -32,14 +32,23 @@ PASSWDFILE="${VNCDIR}/passwd"
 VNCPORT="5900"
 # Note to Self > Add Y/N prompt instead? 
 # Set this to true or false
-POPOS=false
+Check4Pop=`cat /etc/os-release|grep -m 1 -o "Pop\!_OS"`
 # Had to modify to 1 for Pop_OS!
-if $POPOS; 
+if [ "$Check4Pop" == "Pop!_OS" ]; 
 then
     DISPLAY=":1"
 else
     DISPLAY=":0"
 fi
+#Manual Method to Check
+#POPOS=false
+#if $POPOS; 
+#then
+#    DISPLAY=":1"
+#else
+#    DISPLAY=":0"
+#fi
+
 # PID of the actual VNC server running
 # The PID is actually created this way, so it is compatible with the vncserver command
 # if you want to kill the VNC server manually, just type 
