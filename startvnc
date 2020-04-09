@@ -10,6 +10,8 @@
 #
 # Changelog:
 # 2020-03-31 Created by Domenico Costanzo
+# 2020-04-03 Added Check for Pop!_OS
+# 2020-04-07 Adjusted error output for wrong command input
 # ---------------------------------------------------------------------------
 
 # Settings Variables / Configuration
@@ -30,24 +32,15 @@ LOGFILE="${VNCDIR}/${PROGNAME}.log"
 PASSWDFILE="${VNCDIR}/passwd"
 # Set the port (default 5900)
 VNCPORT="5900"
-# Note to Self > Add Y/N prompt instead? 
-# Set this to true or false
+# Check to determine if the current OS is Pop!_OS
+# This check is required as Pop!_OS' active display is :1 rather than :0 like most other distros. 
 Check4Pop=`cat /etc/os-release|grep -m 1 -o "Pop\!_OS"`
-# Had to modify to 1 for Pop_OS!
 if [ "$Check4Pop" == "Pop!_OS" ]; 
 then
     DISPLAY=":1"
 else
     DISPLAY=":0"
 fi
-#Manual Method to Check
-#POPOS=false
-#if $POPOS; 
-#then
-#    DISPLAY=":1"
-#else
-#    DISPLAY=":0"
-#fi
 
 # PID of the actual VNC server running
 # The PID is actually created this way, so it is compatible with the vncserver command
@@ -232,11 +225,9 @@ while [[ -n $1 ]]; do
             exit 1
         fi
     ;;
-    -* | --*)
-      usage
-      error_exit "Unknown option $1" ;;
     *)
-      echo "Argument $1 to process..." ;;
+      usage
+      error_exit "Unknown option '$1' please review the syntax and try your command again." ;;
   esac
   shift
 done
