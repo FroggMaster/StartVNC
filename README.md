@@ -1,57 +1,49 @@
-# startvnc
-Shell script to run TigerVNC server on the actual desktop (scraping).
+# StartVNC
+
+StartVNC is a Stop/Start script designed to easily manage a TigerVNC server on the active desktop X session VIA scraping. 
 
 ## Prerequisites
-TigerVNC server installed 
-Package: tigervnc-scraping-server
 
-**To Install on Manjaro:**
-> pacman -S tigervnc-scraping-server
+- tigervnc-scraping-server >=1.9.0
 
-**To Install on Debian / Ubuntu / Pop_OS!**
-> sudo apt-get install tigervnc-scraping-server
+## Installation
 
-## How it works
-The script checks, if you have already a .vnc Directory in your home ($HOME). You have to set a vnc password with the "vncpasswd" command, this will result a ~/.vnc/passwd file.  
-On debian, the default TigerVNC server binary for scraping is a symbolic link in /usr/bin/x0vncserver (where x0 means the Xsession at display :0). This x0vncserver is a 'dummy' version of the main TigerVNC server binary. Unlike the full version, this doesn't create a virtual display, instead it just shares the current X session at display :0.
+```bash
+git clone https://github.com/FroggMaster/StartVNC.git
+```
 
-## Features
-The script runs in the background, creates a logfile (default ~/.vnc/logfile), where it stores the actual x0vncserver logging information. There is also a pid file, default ~/.vnc/${HOSTNAME}${DISPLAY}.pid where the process id is stored.
+## About
+The default TigerVNC server binary for scraping is a symbolic link in /usr/bin/x0vncserver (where x0 means the Xsession at display :0). This x0vncserver is a 'lite' version of the main TigerVNC server binary. Unlike the full version, this doesn't create a virtual display, instead it just shares the current X session at display :0.
 
-The default port is for the :0 display 5900. If you want to change it, just edit VNCPORT="5900" to whatever port you want the TigerVNC server to listen to.
+The script checks your home directory to determine if ~/.vnc exists. If not it will create one. It will then check for the existence of ~/.vnc/passwd
 
+If this does not exist you will need to manually run
+```bash
+  vncpasswd
+```
 
 ## Usage
-`startvnc start|stop|restart|status`  
 
-`start` - will start the TigerVNC Server on display :0 (scraping) default on port 5900  
-`stop` - will kill the TigerVNC Server on display :0  
-`restart` - will restart the TigerVNC Server on display :0 (if it's not running, it will just start it)  
-`status` - will tell whether the TigerVNC Server is running or not
+```bash
+startvnc Ver. 0.2  
+This script was written for the package tigervnc-scraping-server, in order to log in to the actual X session on the active display.  
 
-## Files
-* *$HOME/.vnc*  
-main TigerVNC server user directory (if it doesn't exist, create it with `mkdir -p ~/.vnc`)
-* *$HOME/.vnc/passwd*  
-password file for VNC Server (if it doesn't exist, create it with `vncpasswd`)
-* *$HOME/.vnc/logfile*  
-logfile location (created by script)
-* *$HOME/.vnc/hostname:0.pid*  
-pid file (created by script)
-
-## Notes
-
-### Kill the TigerVNC Server on command line
-There's a command for killing the vnc server on the command line, by `vncserver -kill :0` if the vnc server runs at the :0 display, reads the actual pid from the file and kills it.  
-However, this command looks for the pid file in your *~/.vnc* directory.  
-The pid file format must be as following: *~/.vnc/${HOSTNAME}${DISPLAY}.pid*  
+Usage: startvnc [-h|--help] [-s|--start] [-k|--kill] [-r|--restart] [-c|--status]  
+    
+Options:  
+  -h, --help     Display this help message and exit.  
+  -s, --start    Start the TigerVNC Server on active display.  
+  -k, --kill     Kill the TigerVNC Server on the active display.  
+  -r, --restart  Restart the TigerVNC Server on the active display.  
+  -c, --status   Output the current status of the TigerVNC Server on the active display.
+```
 
 ### Automatic Start
 If you want to automatically start with the Xsession, you can put it to your ~/.xsessionrc
 Like this:
 
 > user@linux:~$ cat ~/.xsessionrc  
-> /home/user/runvncserver/startvnc start >/dev/null 2>&1
+> /home/user/StartVNC/startvnc -s >/dev/null 2>&1
 
 ## Links
 For further information, please take a look at the TigerVNC server documentation files on
@@ -61,9 +53,7 @@ For further information, please take a look at the TigerVNC server documentation
 - [vncconfig documentation](https://tigervnc.org/doc/vncconfig.html).
 
 ## TODO
-- [ ] Implement better Logs
-- [X] Test on Manjaro & Ubuntu (I'm sure it works fine.)
+- [ ] Implement better Logs > Maybe > Logging has been implemented directly by tigervnc
 - [ ] Perform check for dependencies before doing anything
-- [ ] Implement netter usage instructions
-
-In the future, I try to implement a separate logfile for the script, since the logfile stored in ~/.vnc/logfile has only the TigerVNC Server output.
+- [X] Test on Manjaro & Ubuntu (I'm sure it works fine.)
+- [X] Implement better usage instructions
