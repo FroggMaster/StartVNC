@@ -1,3 +1,4 @@
+
 #!/bin/bash
 # ---------------------------------------------------------------------------
 # startvnc - Start/Stop script designed for the package tigervnc-scraping-server, in order to log in to the X session on the active display.
@@ -13,6 +14,9 @@
 # 2020-04-03 Added Check for Pop!_OS
 # 2020-04-07 Adjusted error output for wrong command input
 # ---------------------------------------------------------------------------
+
+# Dependencies check
+command -v x0vncserver >/dev/null 2>&1 || { echo >&2 "This program requires x0vncserver but it's not installed. Aborting.";}
 
 # Settings Variables / Configuration
 #
@@ -41,6 +45,7 @@ then
 else
     DISPLAY=":0"
 fi
+
 
 # PID of the actual VNC server running
 # The PID is actually created this way, so it is compatible with the vncserver command
